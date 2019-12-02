@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.task1.account.dto.DokumentDTO;
 import com.task1.account.model.Dokument;
+import com.task1.account.model.StavkaDokumenta;
 import com.task1.account.service.DokumentService;
 
 @RestController
@@ -55,7 +56,12 @@ public class DokumentController {
 	@PostMapping("/dokumenti")
 	public ResponseEntity<?> saveDokument(@RequestBody DokumentDTO dokumentDTO) {
 		Dokument dokument = new Dokument();
+		List<StavkaDokumenta> stavkeDokumentaSaIdDokumenta = new ArrayList<StavkaDokumenta>();
 		dokument.setNaziv(dokumentDTO.getNaziv());
+		dokument = dokumentService.saveDokument(dokument);
+		stavkeDokumentaSaIdDokumenta = setDokumentInStavkeDokumenta(dokumentDTO.getStavkeDokumenta(), dokument );
+		dokument.setStavkeDokumenta(stavkeDokumentaSaIdDokumenta);
+		dokument.setIznos(setIznosFromStavkeDokumenta(dokument.getStavkeDokumenta()));
 		dokument = dokumentService.saveDokument(dokument);
 		DokumentDTO savedDokument = modelMapper.map(dokument, DokumentDTO.class);
 		return new ResponseEntity<>(savedDokument, HttpStatus.CREATED);
@@ -64,13 +70,18 @@ public class DokumentController {
 	@PutMapping("/dokumenti/{id}")
 	public ResponseEntity<DokumentDTO> updateDokument(@RequestBody DokumentDTO dokumentDTO, @PathVariable int id){
 		Dokument dokument = dokumentService.getOneDokument(id);
+		List<StavkaDokumenta> stavkeDokumentaSaIdDokumenta = new ArrayList<StavkaDokumenta>();
 		dokument.setNaziv(dokumentDTO.getNaziv());
+		dokument = dokumentService.saveDokument(dokument);
+		stavkeDokumentaSaIdDokumenta = setDokumentInStavkeDokumenta(dokumentDTO.getStavkeDokumenta(), dokument );
+		dokument.setStavkeDokumenta(stavkeDokumentaSaIdDokumenta);
+		dokument.setIznos(setIznosFromStavkeDokumenta(dokument.getStavkeDokumenta()));
 		dokument = dokumentService.saveDokument(dokument);
 		DokumentDTO updatedDokument = modelMapper.map(dokument, DokumentDTO.class);
 		return ResponseEntity.ok().body(updatedDokument);
 	}
 	
-	@DeleteMapping("/deleteDokument/{id}")
+	@DeleteMapping("/dokumenti/{id}")
 	public ResponseEntity<Object> deleteDokument(@PathVariable int id){
 		Dokument dokument = dokumentService.getOneDokument(id);
 		if (dokument != null) {
@@ -80,5 +91,21 @@ public class DokumentController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
-
+	
+	public double setIznosFromStavkeDokumenta(List<StavkaDokumenta> stavkeDokumenta) {
+		double iznos = 0;
+		for (StavkaDokumenta stavka : stavkeDokumenta) {
+			iznos += stavka.getCena() * stavka.getKolicina();
+		}
+		return iznos;
+	}
+	
+	public List<StavkaDokumenta> setDokumentInStavkeDokumenta(List<StavkaDokumenta> stavkeDokumenta, Dokument dokument) {
+		List<StavkaDokumenta> stavkeDokumentaSaIdDokumenta = new ArrayList<StavkaDokumenta>();
+		for (StavkaDokumenta stavka : stavkeDokumenta) {
+				stavka.setDokument(dokument);
+				stavkeDokumentaSaIdDokumenta.add(stavka);
+		}
+		return stavkeDokumentaSaIdDokumenta;
+	}
 }

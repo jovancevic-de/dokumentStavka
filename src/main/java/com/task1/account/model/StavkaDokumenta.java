@@ -26,7 +26,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 public class StavkaDokumenta {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,3 +45,4 @@ public class StavkaDokumenta {
 	@JoinColumn(nullable = false)
 	private Roba roba;
 }
+

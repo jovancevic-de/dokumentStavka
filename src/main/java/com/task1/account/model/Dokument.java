@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -27,22 +28,16 @@ public class Dokument {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@Column(nullable = false, length = 100)
 	private String naziv;
-	
+
 	@Column(nullable = true)
-	private double iznos;
-	
-	@OneToMany(mappedBy = "dokument", fetch = FetchType.LAZY)
+	private Double iznos;
+
+	@OneToMany(mappedBy = "dokument", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<StavkaDokumenta> stavkeDokumenta = new ArrayList<>();
 
-	//customized getIznos()
-	public double getIznos() {
-		double iznos = 0;
-		for (StavkaDokumenta stavka : this.stavkeDokumenta) {
-			iznos += stavka.getCena();
-		}
-		return iznos;
-	}
+	
+
 }
